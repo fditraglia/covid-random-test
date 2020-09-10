@@ -13,16 +13,23 @@ library(shiny)
 ui <- fluidPage(
 
     # Application title
-    titlePanel("Old Faithful Geyser Data"),
+    titlePanel("Title goes here"),
 
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
+            
+            sliderInput("sample_size",
+                        "Sample Size:",
+                        min = 500,
+                        max = 5000,
+                        value = 2500),
+            
+            sliderInput("prevalence",
+                        "True Prevalance (%):",
+                        min = 0.1,
+                        max = 1,
+                        value = 0.5)
         ),
 
         # Show a plot of the generated distribution
@@ -36,12 +43,28 @@ ui <- fluidPage(
 server <- function(input, output) {
 
     output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white')
+        
+        n <- input$sample_size
+        prevalence <- input$prevalence
+        
+        N <- 20000 # population size
+        n_positive <- prevalence * N / 100 
+        n_negative <- N - n_positive 
+        
+        
+        lower <- qhyper(0.001, n_positive, n_negative, n) 
+        upper <- qhyper(0.999, n_positive, n_negative, n) 
+        detection_limit <- qhyper(0.2, n_positive, n_negative, n) 
+        x <- lower:upper 
+        detectable <- ifelse(x >= detection_limit, 'red', 'black')
+  
+        px <- dhyper(x, n_positive, n_negative, n)
+        title1 <- paste0('True Prevalance: ', bquote(.(prevalence)), "%")
+        title2 <- paste0('Sample Size: ', bquote(.(n)))
+        plot(100 * x / n, px, type = 'h', ylab = 'Probability',  
+             main = paste0(title1, ', ', title2), 
+             xlab = 'Estimated Prevalance (%)',   col = detectable,  lwd = 2) 
+        legend("topright", legend = c('20% Probability', '80% Probability'), text.col = c('black', 'red'))
     })
 }
 
