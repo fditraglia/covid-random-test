@@ -43,8 +43,20 @@ As another example, suppose that we initially believed that $C = 20$ and suspect
 
 Approximately 200 test per day would already be useful for answering basic population-level questions concerning prevalence and spread. This would amount to around half as many tests over the entire term as a *single* round of universal testing. 
 
-A simple random sampling procedure is the easiest to explain and to use for back-of-the-envelope calculations, but there are several ways that it could be refined to increase the chance that $\widehat{C}$ will be close to $C$ for a given sample size and true number of cases. The first would be to use a *stratified* rather than simple random sample. It is likely that coronavirus cases will tend to "cluster" within colleges, since the infection is most easily spread through frequent, close contact. If this is so, then a sampling procedure that allocates a *fixed* number of tests to each college (proportional to its size) and draws a simple random sample *within* each college will be more efficient than a simple random sample taken at the university level. Another possibility is to employ *adaptive sampling*, in which additional tests are allocated to colleges in which positive tests are detected in a "first wave" of tests. While the analysis of such a design is more complicated mathematically, it makes more efficient use of a limited number of tests if cases tend to cluster within colleges. 
+A simple random sampling procedure is the easiest to explain and to use for back-of-the-envelope calculations, but there are several ways that it could be refined to increase the accuracy of our estimates for the same number of daily tests.  It is likely that coronavirus cases will tend to "cluster" within colleges, since the infection is most easily spread through frequent, close contact. If this is so, then a sampling procedure that allocates a *fixed* number of tests to each college (proportional to its size) and draws a simple random sample *within* each college will be more efficient than a simple random sample taken at the university level. This is called a *stratified* random sample. Another possibility is to employ *adaptive sampling*, in which additional tests are allocated to colleges in which positive results are detected in a first batch of tests. While the analysis of such a design is more complicated mathematically, it makes more efficient use of a limited number of tests if cases tend to cluster within colleges. 
 
+## Pooled Testing
+Pooled testing is a procedure that can be helpful in situations where laboratory capacity, rather than the ability to collect test samples, is the limiting factor in expanding testing. In this procedure, a single laboratory test is carried out on the *combined* samples of a group of individuals. For a sufficiently sensitive test, a negative result for the pooled sample indicates that no one in the group is infected. Only if the pooled sample tests positive is it necessary to test the individual samples. When the infection is sufficiently rare, pooled testing is highly efficient because virtually all pooled samples will test negative. (Footnote: if you're mainly interested in isolating rather than prevalence, don't even need to re-test! So then just divide by batch size.)  For example, if $C = 20$ then pooling tests by household into groups of six results requires approximately 3500 laboratory tests to achieve the equivalent of universal testing. (Footnote with calculation, explain pessimistic assumptions). This strategy has in fact been adopted by the University of Cambridge. In the absence of sufficient laboratory capacity, pooled testing could be combined with random testing.
+
+```{r}
+p1 <- 20/20000
+p2 <- 100/20000
+k <- 6
+c(1 / k + 1 - (1 - p1)^k, 1 / k + 1 - (1 - p2)^k)
+```
+
+## What about false positives and negatives?
+Thus far we have abstracted away the problem of false positives and false negatives. As our primary goal is to estimate prevalence and spread rather than to diagnose particular individuals, this is not a major concern. First, if false positive and false negative rates are constant, we can still infer the spread of infection by examining changes in estimated prevalence. Second, recent research has proposed estimates of these rates that can be used to correct estimates of population prevalence. 
 
 ```{r, echo = FALSE}
 get_power <- function(n, p, p0, alpha = 0.1) {
@@ -101,9 +113,7 @@ plot_C_hat(1000, 80)
 
 
 
-## Pooled Testing
 
-## What about false positives and negatives?
 
 [^1]: The exact value is 20,001/$(C + 1)$.
 
