@@ -1,6 +1,6 @@
 ---
 title: "Some Back-of-the-envelope Calculations for Surveillance Testing"
-author: "Christina, Frank, and Varun"
+author: "Anonymouse"
 date: "11/09/2020"
 fontsize: 12pt
 output: pdf_document
@@ -12,27 +12,53 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## About This Document
 
-This document outlines some simple strategies to assess the prevalence of coronavirus when there is insufficient capacity to test everyone in the population of interest.   The ideas we discuss are neither novel nor original, and this document does not propose a fully-detailed plan for surveillance testing. Our goals are merely to explain the intuition behind randomized testing and pooled testing, and give a rough approximation to the number of tests required to provide useful information. To keep the discussion as simple as possible, we begin by abstracting from the problem of false negatives and false positives. The final section discusses how these affect our analysis.
+This document outlines some simple strategies to assess the prevalence of coronavirus when there is insufficient capacity to test everyone in the population of interest. The problem of trying to determine whether a given individual has coronavirus is fundamentally different from the problem of estimating the prevalence of coronavirus in a population of interest. The high specificity and sensitivity along with rapid turnaround that are crucial for individual medical diagnosis are not absolutely essential for surveillance testing at the population level. The purpose of this document is to suggest that only relatively modest resources may be sufficient to obtain valuable information regarding the spread and prevalence of coronavirus in the Oxford population. We view this issue as separate from and parallel to the the "Early Alert Testing" service, whose primary purpose is medical. The ideas we discuss are neither novel nor original, and this document does not propose a detailed plan for surveillance testing. Our goals are merely to explain the intuition behind randomized testing and pooled testing for a non-specialist audience, and to give a rough approximation of the number of tests required to provide useful information. To keep the discussion as simple as possible, we begin by abstracting away the problem of false negatives and false positives. The final section discusses how these affect our analysis.
 
 ## The Bottom Line
 Say something like $x$ number of tests per week could reasonably work if prevalence is such-and-such (with and without pooling)
 
 ## Random Testing
-As a rough approximation, suppose that there are $N=$ 20,000 undergraduate and taught masters students in residence at Oxford during MT.
-An unknown number $C$ of them have coronavirus.
-With a perfect test, we could learn $C$ exactly by conducting 20,000 tests.
-But what if we only have the capacity to carry out $n$ tests, where $n$ is much smaller than 20,000?
-In this case we cannot learn $C$ exactly, but by employing *random testing* we can produce an estimate that is sufficiently accurate to guide our mitigation policies.
+As a rough approximation, suppose that there are 20,000 undergraduate and taught masters students in residence at Oxford during MT. An unknown number $C$ of them have the coronavirus. With a perfect test, we could learn $C$ exactly by conducting 20,000 tests. But what if we only have the capacity to carry out $n$ tests, where $n$ is much smaller than 20,000? In this case we cannot learn $C$ exactly, but by employing *random testing* we can produce an estimate that is sufficiently accurate to guide our mitigation policies.
 
-The most basic form of random testing relies on a *simple random sample*. To use this procedure, we place all 20,000 student id numbers into a hat, mix them up thoroughly, and then draw out $n$ at random. These $n$ students are sent for a coronavirus test. We then use the number of students in our *sample* who have coronavirus to estimate the number of students in the *population* who have coronavirus. For example, if one student in a sample of 2000 tests positive, then we would estimate that there are there are $10$ cases in the University as a whole. Expressed as a formula, if $P$ is the number of students in our sample who test positive, then our estimate $E$ of the total number of cases in the university equals $P/n$ multiplied by $N$. In the example, $10/2000$ multiplied by 20,000 equals 10.
+The most basic form of random testing relies on a *simple random sample*. To use this procedure, we place all 20,000 student id numbers into a hat, mix them up thoroughly, and then draw out $n$ at random. These $n$ students are sent for a coronavirus test. We then use the number of students in our *sample* who have coronavirus to estimate the number of students in the *population* who have coronavirus. For example, if one student in a sample of 2000 tests positive, then we would estimate that there are there are $10$ cases in the University as a whole. Expressed as a formula, if $P$ is the number of students in our sample who test positive, then our estimate $E$ of the total number of cases in the university equals $P/n$ multiplied by 20,000. In the example this equals 10.
 
-Because students are chosen at random, the estimated number of cases $E$ may not equal the true number of cases $C$. Purely by chance, we might draw a sample of students in which no one is infected. In this case $E$ would equal zero: an underestimate of $C$. We could also be unlucky in the opposite direction and, purely by chance, draw a sample that contains *everyone* at Oxford who is infected. In this case $E$ would be an overestimate of $C$. So how can we determine whether $E$ will provide useful information about $C$? 
+Because students are chosen at random, the estimated number of cases $E$ may not equal the true number of cases $C$. Purely by chance, we might draw a sample of students in which no one is infected. In this case $E$ would equal zero: an underestimate of $C$. We could also be unlucky in the opposite direction and, purely by chance, draw a sample that contains *everyone* at Oxford who is infected. In this case $E$ would be an overestimate of $C$. While an estimate based on a random sample cannot provide us with perfectly accurate information about the true number of cases, with an appropriate sample size it can tell us with high confidence, say, whether the number of cases is larger than 50 or smaller than 20. Furthermore, it can be used to determine whether the prevalence is increasing and, if so, how quickly. 
 
-The answer is by considering *all possible samples* of students that we could draw. To make this more concrete, consider a simple analogy. A bowl (university) contains 20 marbles (students). Of these, 10 are red (positive for coronavirus) and 10 are blue (negative for coronavirus). It turns out that there are `r format(choose(20, 5), digits = 5)` possible samples of 5 marbles that one could draw, each just as likely as any other. What fraction of these possible samples contain 5 red balls? It turns out that the answer is around `r round(100 * dhyper(5, 10, 10, 5), 1)`\%. While the details of the calculation are a bit different, the intuition is similar to that of flipping a fair coin five times: you are unlikely to get five heads in a row. In contrast, the chance of drawing 2 red and 3 blue marbles is high: around `r round(100 * dhyper(2, 10, 10, 5), 1)`\%. The numbers involved in this example are quite different from those in our real-life testing problem, but the basic intuition is the same: a random sample is likely to be similar to the population from which it was drawn.
+A crucial advantage of random testing over the Early Alert Testing system, which tests only symptomatic individuals, is that random testing it will also detect both pre-symptomatic and asymptomatic cases. The SAGE report of 3rd September refers to a study suggesting that, among undergraduate-aged individuals, asymptomatic cases may constitute up to 80\% of total cases. For this reason, even if their turn-around time were somewhat slower, randomized tests could still provide more timely information about the spread of infection.
 
-Using this idea, we can calculate what is called the *sampling distribution* of our estimator $E$ of the true number of cases $C$ in the university.
+The key question in designing a random testing protocol is how large a sample size to use. If there are $C$ total cases out of 20,000 students in the university, then on average we would need to carry out approximately 20,000$/C$ tests to detect a positive case.[^1] 
+The more prevalent the infection, the fewer tests we need before we detect a positive.
+```{r,echo=FALSE}
+N <- 20000
+cases <- c(10, 20, 50, 100, 200)
+prevalence <- 100 * cases / N
+n_tests <- round((20000 + 1) / (cases + 1))
+foo <- as.data.frame(cbind(cases, prevalence, n_tests))
+knitr::kable(foo, col.names = c('#Cases', 'Prevalence (%)', 'Expected #Tests'),
+             caption = 'Expected number of tests to detect one positive case in a population of 20,000.')
+```
+For example, suppose that we can carry out 200 random tests per day. Then within five days we can with high confidence distinguish between a situation in which there are 100 cases in the university as opposed to 20. (FOOTNOTE.)
 
-The two key advantages of random testing over other kinds of testing procedures, e.g.\ testing only symptomatic individuals, are as follows. First, neither over-estimates nor under-estimates predominate: the *average* value of $\widehat{C}$ is $C$. In statistical parlance we say that $\widehat{C}$ is an *unbiased estimator* of $C$. Second, by choosing an appropriate sample size $n$ we can ensure that $\widehat{C}$ is very unlikely to be far from $C$. 
+As another example, suppose that we initially believed that $C = 20$ and suspected that cases might be doubling every week. With 200 tests per day, we would have a roughly even chance of detecting this, with high confidence, in one week, and be almost certain to detect it within two. (FOOTNOTE)
+
+Approximately 200 test per day would already be useful for answering basic population-level questions concerning prevalence and spread. This would amount to around half as many tests over the entire term as a *single* round of universal testing. 
+
+A simple random sampling procedure is the easiest to explain and to use for back-of-the-envelope calculations, but there are several ways that it could be refined to increase the chance that $\widehat{C}$ will be close to $C$ for a given sample size and true number of cases. The first would be to use a *stratified* rather than simple random sample. It is likely that coronavirus cases will tend to "cluster" within colleges, since the infection is most easily spread through frequent, close contact. If this is so, then a sampling procedure that allocates a *fixed* number of tests to each college (proportional to its size) and draws a simple random sample *within* each college will be more efficient than a simple random sample taken at the university level. Another possibility is to employ *adaptive sampling*, in which additional tests are allocated to colleges in which positive tests are detected in a "first wave" of tests. While the analysis of such a design is more complicated mathematically, it makes more efficient use of a limited number of tests if cases tend to cluster within colleges. 
+
+
+```{r, echo = FALSE}
+get_power <- function(n, p, p0, alpha = 0.1) {
+  mu <- (p - p0) / sqrt(p0 * (1 - p0) /n)
+  s <- sqrt(p * (1 - p) / (p0 * (1 - p0)))
+  alpha <- 0.1
+  critical_value <- qnorm(0.9)
+  return(1 - pnorm(critical_value, mu, s))
+}
+get_power(1000, p = 100/20000, p0 = 20/20000)
+get_power(1400, p = 40/20000, p0 = 20/20000)
+get_power(1400, p = 80/20000, p0 = 20/20000)
+get_power(1400, p = 160/20000, p0 = 20/20000)
+```
 
 This latter point is best understood using an example. Suppose that there are 40 coronavirus cases among 20,000 students. This amounts to a prevalence of $0.2\%$, which would be equivalent to two doublings of the ONS estimate of $0.05\%$ from late August. Accounting for the fact that cases are currently more common among younger age groups, this may be a reasonable approximation to the state of play near the beginning of MT. The following figure shows the different values that the estimated number of cases $\widehat{C}$ could take on, along with their probabilities. In statistical parlance, this is called the "sampling distribution" of $\widehat{C}$. We can calculate these probabilities *exactly* because the randomness in $\widehat{C}$ is entirely under our control: it comes from the fact that students are randomly chosen to be tested.
 
@@ -48,11 +74,16 @@ plot_C_hat <- function(n, C, N = 20000) {
   plot(C_hat, prob_C_hat, type = 'h', ylab = 'Probability', xlab = 'Estimated Cases',
        col = 'blue', lwd = 2, main = mytitle)
 }
+plot_C_hat(1000, 40)
+```
+
+```{r}
 d_C_hat <- function(x, n, C, N = 20000) {
   dhyper(n * x / N, C, N - C, n)
 }
-plot_C_hat(1000, 40)
 ```
+
+
 
 From the figure, we see that $\widehat{C}$ there is a `r round(100 * d_C_hat(40, 1000, 40))`\% chance that our estimate $\widehat{C}$ will equal 40, the true number of cases. Moreover, there is a `r round(100 * sum(d_C_hat(c(20, 40, 60), 1000, 40)))`\% chance that it will be between 20 and 60. There is, of course a chance that our sample will not contain any positives: $\widehat{C}$ equals zero with `r round(100 * d_C_hat(0, 1000, 40))`\% probability.
 
@@ -68,11 +99,11 @@ For a fixed sample size, the probability of failing to detect any cases also fal
 plot_C_hat(1000, 80)
 ```
 
-A simple random sampling procedure is the easiest to explain and to use for back-of-the-envelope calculations, but there are several ways that it could be refined to increase the chance that $\widehat{C}$ will be close to $C$ for a given sample size and true number of cases. The first would be to use a *stratified* rather than simple random sample. It is likely that coronavirus cases will tend to "cluster" within colleges, since the infection is most easily spread through frequent, close contact. If this is so, then a sampling procedure that allocates a *fixed* number of tests to each college (proportional to its size) and draws a simple random sample *within* each college will be more efficient than a simple random sample taken at the university level. Another possibility is to employ *adaptive sampling*, in which additional tests are allocated to colleges in which positive tests are detected in a "first wave" of tests. While the analysis of such a design is more complicated mathematically, it makes more efficient use of a limited number of tests if cases tend to cluster within colleges. 
 
 
 ## Pooled Testing
 
 ## What about false positives and negatives?
 
+[^1]: The exact value is 20,001/$(C + 1)$.
 
