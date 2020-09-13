@@ -5,6 +5,7 @@ date: "13/09/2020"
 fontsize: 12pt
 output: pdf_document
 urlcolor: blue
+fig_caption: TRUE
 ---
 
 ```{r setup, include=FALSE}
@@ -61,25 +62,40 @@ knitr::kable(foo, col.names = c('#Cases ($C$)', 'Prevalence (%)', 'Expected #Sam
              caption = 'Expected number of samples before the first positive result under random sampling without replacement from a population of size 20,000.')
 ```
 
-A second way to address the question of how many samples are needed is by calculating *how close* the estimated number of cases $E$ will likely be to the true number of cases $C$ for different values of $n$. 
 ```{r,echo=FALSE}
-get_range_est_positive <- function(sample_size, Npositive, popn_size = 20000) {
-  lower <- qhyper(0.1, Npositive, popn_size - Npositive, sample_size)
-  upper <- qhyper(0.9, Npositive, popn_size - Npositive, sample_size)
-  out <- popn_size * c(lower, upper) / sample_size
-  return(out)
+get_est_range <- function(sample_size, Npositive, popn_size = 20000, alpha = 0.2) {
+  Plower <- qhyper(alpha / 2, Npositive, popn_size - Npositive, sample_size)
+  Pupper <- qhyper(1 - alpha / 2, Npositive, popn_size - Npositive, sample_size)
+  Elower <- popn_size * Plower / sample_size
+  Eupper <- popn_size * Pupper / sample_size
+  return(c(floor(Elower), ceiling(Eupper)))
 }
 plot_est_range <- function(sample_size, Npositive, popn_size = 20000, alpha = 0.2) {
 # vectorized over sample_size
-  lower <- qhyper(alpha / 2, Npositive, popn_size - Npositive, sample_size)
-  upper <- qhyper(1 - alpha / 2, Npositive, popn_size - Npositive, sample_size)
-  matplot(sample_size, popn_size * cbind(lower, upper) / sample_size,
-          xlab = 'Sample Size (n)', ylab = 'Estimated #Cases (E)',
-          main = bquote(C == .(Npositive)))
+  Plower <- qhyper(alpha / 2, Npositive, popn_size - Npositive, sample_size)
+  Pupper <- qhyper(1 - alpha / 2, Npositive, popn_size - Npositive, sample_size)
+  Elower <- popn_size * Plower / sample_size
+  Eupper <- popn_size * Pupper / sample_size
+  matplot(sample_size, cbind(Elower, Eupper),
+          xlab = 'Sample Size', ylab = 'Estimated #Cases',
+          main = '', pch = '')
+  arrows(sample_size, Elower, sample_size, Eupper, length = 0.05,
+         angle = 90, code = 3, lwd = 2)
   abline(h = Npositive, lty = 2, col = 'blue', lwd = 2)
+  title1 <- 'True #Cases = '
+  title2 <- bquote(.(Npositive))
+  mytitle <- paste0(title1, title2)
+  legend('topright', legend = mytitle)
 }
-plot_est_range(c(100, 500, 1000, 2000, 3000), 50)
 ```
+
+A second way to address the question of how many samples are needed is by calculating *how close* the estimated number of cases $E$ will likely be to the true number of cases $C$ for different values of $n$. Suppose that there are 60 cases within the university. This would represent a slight uptick from the most recent  [REACT-1](https://www.gov.uk/government/publications/react-1-study-of-coronavirus-transmission-august-2020-results/react-1-real-time-assessment-of-community-transmission-of-coronavirus-covid-19-in-august-2020) estimate of coronavirus prevalence among 18-24 year olds. With a sample size of $n =1000$ the estimated number of cases $E$ will fall in the range (`r get_est_range(1000, 60)`) with more than 80\% probability. With a sample size of $n = 1500$ this range would narrow to (`r get_est_range(1500, 60)`). The figure overleaf presents analogous results for sample sizes of $500$ and $2000$.
+
+```{r, echo = FALSE, fig.width=5, fig.height=4, fig.align = 'center', fig.cap = 'This figure shows how close the estimated number of cases will likely be to the true number of cases for different sample sizes. At a given sample size, the estimated number of cases as a greater than 80\\% chance of falling in the specified interval.'}
+plot_est_range(c(500, 1000, 1500, 2000), 60)
+```
+
+A third way of deciding how many samples are needed is by calculating the chance that we will be able to distinguish, with high confidence, between two different levels of coronavirus prevalence given a particular sample size. 
 
 For example, suppose that we can carry out 200 random tests per day. Then within five days we can with high confidence distinguish between a situation in which there are 100 cases in the university as opposed to 20. (FOOTNOTE.)
 
