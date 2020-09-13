@@ -91,7 +91,7 @@ plot_est_range <- function(sample_size, Npositive, popn_size = 20000, alpha = 0.
 
 A second way to address the question of how many samples are needed is by calculating *how close* the estimated number of cases $E$ will likely be to the true number of cases $C$ for different values of $n$. Suppose that there are 60 cases within the university. This would represent a slight uptick from the most recent  [REACT-1](https://www.gov.uk/government/publications/react-1-study-of-coronavirus-transmission-august-2020-results/react-1-real-time-assessment-of-community-transmission-of-coronavirus-covid-19-in-august-2020) estimate of coronavirus prevalence among 18-24 year olds. With a sample size of $n =1000$ the estimated number of cases $E$ will fall in the range (`r get_est_range(1000, 60)`) with more than 80\% probability. With a sample size of $n = 1500$ this range would narrow to (`r get_est_range(1500, 60)`). The figure overleaf presents analogous results for sample sizes of $500$ and $2000$.[^4]
 
-[^4]: These calculations are based on the exact sampling distribution of $E$ under a simple random sample of size $n$ from a population of size $N$ containing $C$ positives. This can be tabulated from the quantiles of a Hypergeometric($C$, $N - C$, $n$) random variable.
+[^4]: These intervals are calculated from the quantiles of a Hypergeometric($C$, $N - C$, $n$) distribution where $n$ is the sample size and $C$ is the number of positives in a population of size $N$.
 
 ```{r, echo = FALSE, fig.width=5, fig.height=4, fig.align = 'center', fig.cap = 'This figure shows how close the estimated number of cases will likely be to the true number of cases for different sample sizes. At a given sample size, the estimated number of cases as a greater than 80\\% chance of falling in the specified interval.'}
 plot_est_range(c(500, 1000, 1500, 2000), 60)
@@ -106,12 +106,10 @@ get_power <- function(n, p, p0, N = 20000, alpha = 0.1) {
   critical_value <- qnorm(0.9)
   return(1 - pnorm(critical_value, mu, s))
 }
-get_power(1400, p = 100/20000, p0 = 50/20000)
-get_power(1400, p = 200/20000, p0 = 50/20000)
 ```
-A third way of deciding how many samples are needed is by calculating the chance that we will be able to reliably distinguish between two different levels of coronavirus prevalence given a particular sample size. Suppose, for example, that we initially believed there were $50$ cases in the university, corresponding to the current estimated prevalence among the university-aged population, and wanted to determine whether this number was increasing.
+A third way of deciding how many samples are needed is by calculating the chance that we will be able to reliably distinguish between two different levels of coronavirus prevalence given a particular sample size. Suppose, for example, that we initially believed there to be $50$ cases in the university, corresponding to the current estimated prevalence among the university-aged population from   [REACT-1](https://www.gov.uk/government/publications/react-1-study-of-coronavirus-transmission-august-2020-results/react-1-real-time-assessment-of-community-transmission-of-coronavirus-covid-19-in-august-2020). If cases increased to 100, we would have approximately a `r round(100 * get_power(1400, p = 100/20000, p0 = 50/20000))`\% chance of detecting this, with high confidence, based on a sample 1400 students.[^5] If they increased to 200, we would have a `r round(100 * get_power(1400, p = 200/20000, p0 = 50/20000))`\% chance of detecting it. Intuitively, if cases were doubling weekly, then a sample of roughly 200 students per day would be likely to detect an increase after one week, and nearly certain to do so after two weeks.
 
-
+[^5]: The calculations in this paragraph are based on a power calculation for a test of the null hypothesis $H_0\colon p \leq 0.0025$ against the one-sided alternative $H_1\colon p > 0.0025$ with level $\alpha = 0.1$ using the score test statistic $T_n = (\widehat{p} - p_0)/ SE(p_0)$ where $SE(p_0)$ is the theoretical standard error under the null with a finite-population correction, i.e.\ $SE(p_0) = \sqrt{\kappa p_0 (1 - p_0)/n}$ where $\kappa = (N - n)/(N - 1)$ and $N$ is the population size.
 
 With 200 tests per day, we would have a roughly even chance of detecting this, with high confidence, in one week, and be almost certain to detect it within two. (FOOTNOTE)
 
