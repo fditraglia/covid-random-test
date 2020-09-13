@@ -129,47 +129,5 @@ c(1 / k + 1 - (1 - p1)^k, 1 / k + 1 - (1 - p2)^k)
 Thus far we have abstracted away the problem of false positives and false negatives. As our primary goal is to estimate prevalence and spread rather than to diagnose particular individuals, this is not a major concern. First, if false positive and false negative rates are constant, we can still infer the spread of the infection by examining *changes* in estimated prevalence. Second, recent research has proposed estimates of these rates that can be used to correct estimates of population prevalence. Third, based on 
 
 
-This latter point is best understood using an example. Suppose that there are 40 coronavirus cases among 20,000 students. This amounts to a prevalence of $0.2\%$, which would be equivalent to two doublings of the ONS estimate of $0.05\%$ from late August. Accounting for the fact that cases are currently more common among younger age groups, this may be a reasonable approximation to the state of play near the beginning of MT. The following figure shows the different values that the estimated number of cases $\widehat{C}$ could take on, along with their probabilities. In statistical parlance, this is called the "sampling distribution" of $\widehat{C}$. We can calculate these probabilities *exactly* because the randomness in $\widehat{C}$ is entirely under our control: it comes from the fact that students are randomly chosen to be tested.
-
-```{r, echo=FALSE, fig.height = 4}
-plot_C_hat <- function(n, C, N = 20000) {
-  lower <- qhyper(0.001, C, N - C, n)
-  upper <- qhyper(0.999, C, N - C, n)
-  C_hat <- N * lower:upper / n
-  prob_C_hat <- dhyper(lower:upper, C, N - C, n)
-  title1 <- paste('True Cases: ', bquote(.(C)))
-  title2 <- paste('Sample Size: ', bquote(.(n)))
-  mytitle <- paste0(title1, ', ', title2)
-  plot(C_hat, prob_C_hat, type = 'h', ylab = 'Probability', xlab = 'Estimated Cases',
-       col = 'blue', lwd = 2, main = mytitle)
-}
-plot_C_hat(1000, 40)
-```
-
-```{r}
-d_C_hat <- function(x, n, C, N = 20000) {
-  dhyper(n * x / N, C, N - C, n)
-}
-```
-
-
-
-From the figure, we see that $\widehat{C}$ there is a `r round(100 * d_C_hat(40, 1000, 40))`\% chance that our estimate $\widehat{C}$ will equal 40, the true number of cases. Moreover, there is a `r round(100 * sum(d_C_hat(c(20, 40, 60), 1000, 40)))`\% chance that it will be between 20 and 60. There is, of course a chance that our sample will not contain any positives: $\widehat{C}$ equals zero with `r round(100 * d_C_hat(0, 1000, 40))`\% probability.
-
-For a given number of true cases in the population, increasing the sample size makes it more likely that $\widehat{C}$ will be close to $C$. For $n = 2000$ the sampling distribution of $\widehat{C}$ becomes more "bell-shaped." With this increased sample size, there is now a `r round(100 * sum(d_C_hat(10 * (2:6), 2000, 40)))`\% chance that it will be between 20 and 60. The chance that we will fail to detect any cases falls to `r round(100 * d_C_hat(0, 2000, 40))`\%.
-
-```{r, echo = FALSE, fig.height = 4}
-plot_C_hat(2000, 40)
-```
-
-For a fixed sample size, the probability of failing to detect any cases also falls as the number of true cases rises. Suppose, for example, that the number of cases in the population were to double from 40 to 80. Then, with a sample size of 1000, the probability that $\widehat{C} = 0$ would fall from `r round(100 * d_C_hat(0, 1000, 40))`\% to `r round(100 * d_C_hat(0, 1000, 80))`\%. As a rough guide, a sample size between one and two thousand tests per week should be sufficiently informative to detect cases when the prevalence is 0.2\% or above. 
-
-```{r, echo = FALSE, fig.height = 4}
-plot_C_hat(1000, 80)
-```
-
-
-
-
 
 
