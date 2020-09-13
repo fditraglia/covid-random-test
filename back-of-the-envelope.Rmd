@@ -1,35 +1,56 @@
 ---
-title: "Short Note on Surveillance Testing"
-author: "FdT, CG, VK"
-date: "11/09/2020"
+title: "A Short Note on Surveillance Testing"
+author: "FdT, CG, & VK on behalf of LMH Governing Body"
+date: "13/09/2020"
 fontsize: 12pt
 output: pdf_document
+urlcolor: blue
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Summary
 
-This document outlines some simple strategies to assess the prevalence of coronavirus when there is insufficient capacity to test everyone in the population of interest. The problem of trying to determine whether a given individual has coronavirus is fundamentally different from the problem of estimating the prevalence. The high test specificity and sensitivity along with rapid turnaround that are crucial for individual medical diagnosis are not absolutely essential for surveillance testing. The purpose of this document is to suggest that only relatively modest resources may be sufficient to obtain valuable information regarding the spread and prevalence of coronavirus in the Oxford population. We view this issue as separate from and parallel to the the "Early Alert Testing" service, whose primary purpose is medical. The ideas we discuss are neither novel nor original, and this document does not propose a detailed plan for surveillance testing. Our goals are merely to explain the intuition behind randomized testing and pooled testing for a non-specialist audience, and to give a rough approximation of the number of tests required to provide useful information. To keep the discussion as simple as possible, we begin by abstracting away the problem of false negatives and false positives. The final section discusses how these affect our analysis.
+This document outlines some simple strategies to assess the prevalence of coronavirus when there is insufficient capacity to test everyone in the population of interest. The problem of trying to determine whether a given individual has coronavirus is fundamentally different from the problem of estimating the prevalence of infection. The high test specificity and sensitivity along with rapid turnaround that are crucial for individual medical diagnosis are not absolutely essential for surveillance testing. The purpose of this document is to suggest that only relatively modest resources may be sufficient to obtain valuable information regarding the spread and prevalence of coronavirus in the Oxford population. We view this issue as separate from and parallel to the the "Early Alert Testing" service. The ideas we discuss are neither novel nor original, and this document does not propose a detailed plan for surveillance testing. Our goals are merely to explain the intuition behind randomized testing and pooled testing for a non-specialist audience, and to give a rough approximation of the number of tests required to provide useful information. To keep the discussion as simple as possible, we begin by abstracting away the problem of false negatives and false positives. The final section discusses how these affect our analysis.
 
 ## The Bottom Line
+```{r, echo=FALSE}
+get_pool_fraction <- function(pool_size, prob_positive) {
+  1 / pool_size + 1 - (1 - prob_positive)^pool_size
+}
+get_pool_tests <- function(n, pool_size, prob_positive) {
+  round(n * get_pool_fraction(pool_size, prob_positive))
+}
+```
+Testing a random sample of around 1400 students each week would provide useful estimates of the prevalence and spread of coronavirus in the university. Using the simplest pooled testing strategy, this would require approximately `r get_pool_tests(1400, 7, 0.0025)` laboratory tests per week, i.e.\ `r get_pool_tests(200, 7, 0.0025)` per day. To lessen the logistical burden of collecting 200 samples each day, individuals could be instructed to self-swab while being supervised by a healthcare professional.[^1] Our understanding is that testing capacity cannot be diverted from the Early Alert Testing service. As such, the university would need to obtain approximately `r round(get_pool_tests(1400 * 8, 7, 0.0025), digits = -3)` tests from another source over the course of MT. These tests need not have a rapid turnaround time: a delay of several days would still be useful to assess the spread of infection. **Say something about false positives and false negatives!!!**
 
-With 1400 tests a week, i.e. 200 tests per day, one could perform randomized testing that gives useful estimates for prevalence of coronavirus in the Oxford student population. With 4000 tests a week, universal testing of the student population with pooling could be carried out. For universal testing to be effective, turnaround times would have to be 24-48 hours at the most, whereas randomized testing would still be useful, albeit with delayed signal, with longer turnaround times.
+[^1]: This is the procedure used by the ONS in their [Coronavirus Infection Survey pilot](https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/conditionsanddiseases/bulletins/coronaviruscovid19infectionsurveypilot/11september2020). A recent study suggests that this procedure is no less accurate than having healthcare workers conduct the swabs directly: <https://www.medrxiv.org/content/10.1101/2020.04.11.20062372v1>.
 
-## Random Testing
 
-As a rough approximation, suppose that there are 20,000 undergraduate and taught masters students in residence at Oxford during MT. An unknown number $C$ of them have the coronavirus. With a perfect test, we could learn $C$ exactly by conducting 20,000 tests. But what if we only have the capacity to carry out $n$ tests, where $n$ is much smaller than 20,000? In this case we cannot learn $C$ exactly, but by employing *randomized testing* we can produce an estimate that is sufficiently accurate to guide our mitigation policies.
+<!--With 1400 tests a week, i.e. 200 tests per day, one could perform randomized testing that gives useful estimates for prevalence of coronavirus in the Oxford student population. With 4000 tests a week, universal testing of the student population with pooling could be carried out. For universal testing to be effective, turnaround times would have to be 24-48 hours at the most, whereas randomized testing would still be useful, albeit with delayed signal, with longer turnaround times.-->
 
-The most basic form of randomized testing relies on a *simple random sample*. To use this procedure, we place all 20,000 student id numbers into a hat, mix them up thoroughly, and then draw out $n$ at random. These $n$ students are sent for a coronavirus test. We then use the number of students in our *sample* who have coronavirus to estimate the number of students in the *population* who have coronavirus. For example, if one student in a sample of 2000 tests positive, then we would estimate that there are there are $10$ cases in the University as a whole. <!--Expressed as a formula, if $P$ is the number of students in our sample who test positive, then our estimate $E$ of the total number of cases in the university equals $P/n$ multiplied by 20,000. In the example this equals 10.-->
+## Randomized Testing
 
-Because students are chosen at random, the estimated number of cases $E$ may not equal the true number of cases $C$. Purely by chance, we might draw a sample of students in which no one is infected. In this case $E$ would equal zero: an underestimate of $C$. We could also be unlucky in the opposite direction and, purely by chance, draw a sample that contains *everyone* at Oxford who is infected. In this case $E$ would be an overestimate of $C$. However, while an estimate based on a random sample cannot provide us with perfectly accurate information about the true number of cases, it is extremely unlikely to get estimates that are very far from the truth. Indeed, with an appropriate sample size it can tell us with high confidence whether the number of cases, say, is greater than 50 or fewer than 20. Furthermore, it can be used to determine whether the prevalence is increasing and, if so, how quickly. 
+As a rough approximation, suppose that there are 20,000 undergraduate and taught masters students in residence at Oxford during MT. An unknown number $C$ of them have the coronavirus. With a perfect test, we could learn $C$ by testing all 20,000 students. But what if we only have the capacity to carry out $n$ tests, where $n$ is much smaller than 20,000? In this case we cannot learn $C$ exactly, but by employing *randomized testing* we can produce an estimate that is sufficiently accurate to guide our mitigation policies. The value of randomized testing is widely acknowledged. It underlies both the [Coronavirus Infection Survey pilot](https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/conditionsanddiseases/bulletins/coronaviruscovid19infectionsurveypilot/11september2020) conducted by the ONS, and the [REACT-1](https://www.gov.uk/government/publications/react-1-study-of-coronavirus-transmission-august-2020-results/react-1-real-time-assessment-of-community-transmission-of-coronavirus-covid-19-in-august-2020) survey conducted by the Department of Health and Social Care. We propose that similar regime of randomized testing be carried out within the University of Oxford. 
 
-A crucial advantage of randomized testing over the Early Alert Testing system, which tests only symptomatic individuals, is that it will also detect pre-symptomatic and asymptomatic cases. The SAGE report of 3rd September refers to a study suggesting that, among undergraduate-aged individuals, asymptomatic cases may constitute up to 80\% of total cases. For this reason, even if their turn-around time were somewhat slower, randomized tests could still provide more timely information about the spread of infection.
+The most basic form of randomized testing relies on a *simple random sample*. To use this procedure, we place all 20,000 student id numbers into a hat, mix them up thoroughly, and then draw out $n$ at random. These $n$ students are sent for a coronavirus test. We then use the number of students in our sample who have coronavirus to calculate an estimate $E$ of the number students in the population who have coronavirus. For example, if one student in a sample of 2000 tests positive, then we would estimate that there are there are $10$ cases in the University as a whole. 
+<!--Expressed as a formula, if $P$ is the number of students in our sample who test positive, then our estimate $E$ of the total number of cases in the university equals $P/n$ multiplied by 20,000. In the example this equals 10.-->
 
-The key question in designing a randomized testing protocol is how large a sample size to use. If there are $C$ total cases out of 20,000 students in the university, then on average we would need to carry out approximately 20,000$/C$ tests to detect a positive case.[^1] 
+Because students are chosen at random, the estimated number of cases $E$ may not equal the true number of cases $C$. Purely by chance, we might draw a sample of students in which no one is infected. In this case $E$ would equal zero: an underestimate of $C$. We could also be unlucky in the opposite direction and, purely by chance, draw a sample that contains everyone at Oxford who is infected. In this case $E$ would be an overestimate of $C$. Both of these possibilities, however, are remote: $E$ is highly likely to be close to $C$. With an appropriate sample size, an estimate based on random testing is reliable enough to tell us with high confidence whether the number of cases is, say, greater than 50 or fewer than 20. It can be used to determine whether prevalence is increasing and, if so, how quickly. 
+
+A crucial advantage of randomized testing over the Early Alert Testing system, which tests only symptomatic individuals, is that it will also detect pre-symptomatic and asymptomatic cases. This is important because, as explained in the  [SAGE report of 3rd September](https://www.gov.uk/government/publications/principles-for-managing-sars-cov-2-transmission-associated-with-higher-education-3-september-2020), "asymptomatic transmission is a key risk in university settings." Indeed, a recent study cited in the SAGE report finds that only 18\% of those aged 0--19 and 22\% of those aged 20--39 who are infected with coronavirus show symptoms of the disease.[^2] Even if these figures are substantial overestimates, it is likely that a considerable fraction of infections among our students will go undetected by the Early Alert Testing system. For this reason, even if the turnaround times for randomized tests were somewhat slower, they could still provide more timely information about the spread of infection. 
+
+[^2]: [https://arxiv.org/abs/2006.08471](https://arxiv.org/abs/2006.08471)
+
+### Self-swab under medical guidance: ONS says it's very effective
+
+The key question in designing a randomized testing protocol is how large a sample size to use. If there are $C$ total cases out of 20,000 students in the university, then on average we would need to carry out approximately 20,000$/C$ tests to detect a positive case.[^3] 
 The more prevalent the infection, the fewer tests we need before we detect a positive.
+
+[^3]: The exact value is 20,001/$(C + 1)$.
+
+
 ```{r,echo=FALSE}
 N <- 20000
 cases <- c(10, 20, 50, 100, 200)
@@ -117,5 +138,4 @@ plot_C_hat(1000, 80)
 
 
 
-[^1]: The exact value is 20,001/$(C + 1)$.
 
