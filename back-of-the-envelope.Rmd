@@ -23,10 +23,10 @@ get_pool_tests <- function(n, pool_size, prob_positive) {
   round(n * get_pool_fraction(pool_size, prob_positive))
 }
 ```
-Testing a random sample of 1400 students each week would provide useful estimates of the prevalence and spread of coronavirus at Oxford, allowing us to evaluate the effectiveness of and level of compliance with the university's [COVID-19 Student Responsibility Agreement](https://www.ox.ac.uk/coronavirus/students/agreement). 
+Testing a random sample of 1400 students each week would provide useful estimates of the prevalence and spread of coronavirus at Oxford, allowing us to evaluate the effectiveness of the university's [COVID-19 Student Responsibility Agreement](https://www.ox.ac.uk/coronavirus/students/agreement) and guide potential policy changes.
 Using a simple pooling strategy, this would require approximately `r get_pool_tests(1400, 7, 0.0025)` laboratory tests per week, i.e.\ `r get_pool_tests(200, 7, 0.0025)` per day. 
 <!--Randomized surveillance testing remains useful even in the presence of false negatives and positives.-->
-Because capacity cannot be diverted from the Early Alert Testing service, the university would need to obtain roughly `r round(get_pool_tests(1400 * 8, 7, 0.0025), digits = -3)` tests from another source over the course of MT. These need not have a rapid turnaround time: a delay of several days would still be useful to assess the spread of infection. Pooled testing reduces the number of laboratory tests required but does not affect the number of samples that need to be collected. To lessen the logistical burden of collecting 200 samples each day, individuals could be instructed to self-swab while being supervised by a healthcare professional.[^1] 
+Because capacity cannot be diverted from the Early Alert Testing service, the university would need to obtain a total of roughly `r round(get_pool_tests(1400 * 8, 7, 0.0025), digits = -3)` laboratory tests from another source over the course of MT. These need not have a rapid turnaround time: a delay of several days would still be useful to assess the spread of infection. Pooled testing reduces the number of laboratory tests required but does not affect the number of samples that need to be collected. To lessen the logistical burden of collecting 200 samples each day, individuals could be asked to self-swab while being supervised by a healthcare professional.[^1] 
 
 [^1]: This is the procedure used by the ONS in their [Coronavirus Infection Survey pilot](https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/conditionsanddiseases/bulletins/coronaviruscovid19infectionsurveypilot/11september2020). A recent study suggests that this procedure is no less accurate than having healthcare workers conduct the swabs directly: <https://www.medrxiv.org/content/10.1101/2020.04.11.20062372v1>.
 
@@ -35,7 +35,7 @@ Because capacity cannot be diverted from the Early Alert Testing service, the un
 
 ## Randomized Testing
 
-As a rough approximation, suppose that there are 20,000 undergraduate and taught masters students in residence at Oxford during MT. An unknown number $C$ of them have the coronavirus. With a perfect test, we could learn $C$ by testing all 20,000 students. But what if we only have the capacity to carry out $n$ tests, where $n$ is much smaller than 20,000? In this case we cannot learn $C$ exactly, but by employing *randomized testing* we can produce an estimate that is sufficiently accurate to guide our mitigation policies. The value of randomized testing is widely acknowledged. It underlies both the [Coronavirus Infection Survey pilot](https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/conditionsanddiseases/bulletins/coronaviruscovid19infectionsurveypilot/11september2020) conducted by the ONS, and the [REACT-1](https://www.gov.uk/government/publications/react-1-study-of-coronavirus-transmission-august-2020-results/react-1-real-time-assessment-of-community-transmission-of-coronavirus-covid-19-in-august-2020) survey conducted by the Department of Health and Social Care. Both of these surveys are extremely valuable, but as they aim to be nationally representative neither employs a sufficiently large sample size to track local trends. As such we propose that randomized surveillance testing be carried out within the university.
+As a rough approximation, suppose that there are 20,000 undergraduate and taught masters students in residence at Oxford during MT. An unknown number $C$ of them have the coronavirus. With a perfect test, we could learn $C$ by testing all 20,000 students. But what if we only have the capacity to carry out $n$ tests, where $n$ is much smaller than 20,000? In this case we cannot learn $C$ exactly, but by employing *randomized testing* we can produce an estimate that is sufficiently accurate to guide our mitigation policies. The value of randomized testing is widely acknowledged. It underlies both the [Coronavirus Infection Survey pilot](https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/conditionsanddiseases/bulletins/coronaviruscovid19infectionsurveypilot/11september2020) conducted by the ONS, and the [REACT-1](https://www.gov.uk/government/publications/react-1-study-of-coronavirus-transmission-august-2020-results/react-1-real-time-assessment-of-community-transmission-of-coronavirus-covid-19-in-august-2020) survey conducted by the Department of Health and Social Care. Both of these surveys are extremely valuable, but as they aim to be nationally representative, neither employs a sufficiently large sample size to track local trends. As such we propose that randomized surveillance testing be carried out within the university.
 
 The most basic form of randomized testing relies on a *simple random sample*. To use this procedure, we place all 20,000 student id numbers into a hat, mix them up thoroughly, and then draw out $n$ at random. These $n$ students are sent for a coronavirus test. We then use the number of students in our sample who have coronavirus to calculate an estimate $E$ of the number students in the population who have coronavirus. For example, if one student in a sample of 2000 tests positive, then we would estimate that there are there are $10$ cases in the University as a whole. 
 <!--Expressed as a formula, if $P$ is the number of students in our sample who test positive, then our estimate $E$ of the total number of cases in the university equals $P/n$ multiplied by 20,000. In the example this equals 10.-->
@@ -46,7 +46,7 @@ Relative to the Early Alert Testing system, which tests only symptomatic individ
 
 [^2]: [https://arxiv.org/abs/2006.08471](https://arxiv.org/abs/2006.08471)
 
-The key question in designing a randomized testing protocol is how large a sample size to use. Fortunately, there are several simple ways to provide an approximate answer. One is to calculate how many students we would need to sample *on average* before we detect our first positive result. If there are $C$ total cases out of 20,000 students in the university then the answer is approximately 20,000$/C$.[^3] The following table presents results for a range of values for $C$. As we see from the table, the more prevalent the infection, the fewer tests we need before we detect a positive. For purposes of comparison, we can say with high confidence based on recent results from [REACT-1](https://www.gov.uk/government/publications/react-1-study-of-coronavirus-transmission-august-2020-results/react-1-real-time-assessment-of-community-transmission-of-coronavirus-covid-19-in-august-2020) that between 0.16\% and 0.41\% of individuals in the 18-24 age group had the coronavirus at the start of September, roughly 30-80 out of 20,000.
+The key question in designing a randomized testing protocol is how large a sample size to use. Fortunately, there are several simple ways to provide an approximate answer. One is to calculate how many students we would need to sample *on average* before we detect our first positive result. If there are $C$ total cases out of 20,000 students in the university then the answer is approximately 20,000$/C$.[^3] The following table presents results for a range of values for $C$. As we see from the table, the more prevalent the infection, the fewer tests we need before we detect a positive. For purposes of comparison, we can say with high confidence based on recent results from [REACT-1](https://www.gov.uk/government/publications/react-1-study-of-coronavirus-transmission-august-2020-results/react-1-real-time-assessment-of-community-transmission-of-coronavirus-covid-19-in-august-2020) that between 0.16\% and 0.41\% of individuals in the 18-24 age group had the coronavirus at the start of September: roughly 30-80 out of 20,000.
 
 [^3]: The exact value is 20,001/$(C + 1)$.
 
@@ -61,7 +61,25 @@ knitr::kable(foo, col.names = c('#Cases ($C$)', 'Prevalence (%)', 'Expected #Sam
              caption = 'Expected number of samples before the first positive result under random sampling without replacement from a population of size 20,000.')
 ```
 
-A second way to address the question of how many samples are required to gain useful information is by calculating how close the estimated number of cases $E$ will likely be to the true number of cases $C$ for different values of $n$. 
+A second way to address the question of how many samples are needed is by calculating *how close* the estimated number of cases $E$ will likely be to the true number of cases $C$ for different values of $n$. 
+```{r,echo=FALSE}
+get_range_est_positive <- function(sample_size, Npositive, popn_size = 20000) {
+  lower <- qhyper(0.1, Npositive, popn_size - Npositive, sample_size)
+  upper <- qhyper(0.9, Npositive, popn_size - Npositive, sample_size)
+  out <- popn_size * c(lower, upper) / sample_size
+  return(out)
+}
+plot_est_range <- function(sample_size, Npositive, popn_size = 20000, alpha = 0.2) {
+# vectorized over sample_size
+  lower <- qhyper(alpha / 2, Npositive, popn_size - Npositive, sample_size)
+  upper <- qhyper(1 - alpha / 2, Npositive, popn_size - Npositive, sample_size)
+  matplot(sample_size, popn_size * cbind(lower, upper) / sample_size,
+          xlab = 'Sample Size (n)', ylab = 'Estimated #Cases (E)',
+          main = bquote(C == .(Npositive)))
+  abline(h = Npositive, lty = 2, col = 'blue', lwd = 2)
+}
+plot_est_range(c(100, 500, 1000, 2000, 3000), 50)
+```
 
 For example, suppose that we can carry out 200 random tests per day. Then within five days we can with high confidence distinguish between a situation in which there are 100 cases in the university as opposed to 20. (FOOTNOTE.)
 
