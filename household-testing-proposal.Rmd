@@ -142,6 +142,8 @@ A more refined way to determine an appropriate sample size is by calculating *ho
 plot_est_range(c(100, 150, 200, 250, 300), 35)
 ```--->
 
+**Update power calculation to Fisher's exact test! The population size is too small for a normal approximation to be reasonable here.**
+
 ```{r, echo = FALSE}
 get_power <- function(n, p, p0, N = 20000, alpha = 0.1) {
   finite_correct <- (N - n) / (N - 1) # finite popn correction
@@ -156,44 +158,17 @@ A third way of deciding how many samples are needed is by calculating the chance
 
 [^5]: These values correspond to a power calculation for an $\alpha = 0.1$ test of $H_0\colon p \leq p_0$ versus $H_1\colon p > p_0$ using the score test statistic $T_n = (\widehat{p} - p_0)/ SE(p_0)$ where $SE(p_0) = \sqrt{\kappa p_0 (1 - p_0)/n}$ and $\kappa = (N - n)/(N - 1)$ is a finite-population correction. In finite sample simulations, a standard normal critical value yields a slightly over-sized test, $\alpha \approx 0.13$ rather than 0.1, resulting in slightly higher power than this calculation would suggest.
 
-Broadly speaking, our calculations suggests that a simple random sample of approximately 200 students per day (1400 per week) would be useful to estimate population prevalence and determine whether, and how quickly, it may be increasing. This would amount to around half as many tests over the entire term as would be required for a *single* round of universal testing. The number of tests required could also be dramatically reduced by using a pooled testing strategy, as outlined below. While a simple random sampling procedure is the easiest to explain and to use for back-of-the-envelope calculations, there are several ways that it could be refined to increase the accuracy of our estimates. It is likely that coronavirus cases will tend to "cluster" within colleges, since the infection is most easily spread through frequent, close contact. If this is so, then a sampling procedure that allocates a certain number of tests to each college and draws a simple random sample *within* each college will be more efficient than a simple random sample taken at the university level. This is called a *stratified* random sample. Another possibility is to employ *adaptive sampling*, in which additional tests are allocated to colleges in which positive results are detected in a first batch of tests. While the analysis of such a design is more complicated mathematically, under assumptions that are likely to hold in the present example, it can make more efficient use of a limited number of tests.[^b] In a similar vein, one could consider a sampling procedure the exploits the fact that transmission is most likely to occur within household groups.
+Broadly speaking, our calculations suggests that a simple random sample of approximately 250 household groups per week to estimate coronavirus prevalence at the household level and to determine whether, and how quickly, it may be increasing. This would amount to around ??? as many tests over the entire term as would be required for a *single* round of universal testing. 
 
-[^b]: [Thompson, S.K. (1990), "Adaptive Cluster Sampling", *Journal of the American Statistical Association*, 85(412), pp. 1050-1059](https://amstat.tandfonline.com/doi/abs/10.1080/01621459.1990.10474975). 
+## Finding Clusters with Adaptive Sampling
+Thus far assumed we want to estimate prevalence and considered simplest possible sampling procedure: simple random sample.
+May also want to try to find and isolate clusters of infection.
+In fact a more sophisticated sampling design can achieve both goals simultaneously: adaptive cluster sampling.[^adapt]
+Define "neighborhoods" of households between which transmission is particularly likely, e.g. residence halls.
+If one household tests positive, immediately test the other households in its neighborhood.
+Deviation from simple random sample is more complicated to analyze mathematically but blah blah blah very good blah blah.[^adapt]
 
-## Pooled Testing
-Pooled testing is a procedure that can be helpful in situations where laboratory capacity, rather than the ability to collect test samples, is the limiting factor in expanding testing. In this procedure, a single laboratory test is carried out on the *combined* samples of a group of individuals. For a sufficiently sensitive test, a negative result for the pooled sample indicates that no one in the group is infected. A positive test indicates that at least one individual in the group is infected, and it is then necessary to test the individual samples to pinpoint the infected individual or individuals.  When the infection is sufficiently rare, pooled testing is highly efficient because virtually all pooled samples will test negative. For example, if $C = 50$ then pooling tests in groups of 5 would require approximately `r round(get_pool_tests(20000, 5, 50/20000), digits = -1)` laboratory tests to achieve the equivalent of universal testing.[^7] This strategy has in fact been adopted by the University of Cambridge. In the absence of sufficient laboratory capacity, pooled testing could be combined with randomized testing. For example, our proposal to test a random sample of 1400 students each week would require approximately `r round(get_pool_tests(1400, 5, 50/20000), digits = -2)` laboratory tests each week. More sophisticated pooling strategies could potentially yield further improvement.[^8]
-
-<!--[^6]: If one's goal is to identify and isolate infected households rather than to estimate the prevalence of coronavirus in the population, there is no need for re-testing. In this case, pooling by household requires only as many tests as there are households, regardless of disease prevalence.-->
-
-[^7]: These calculations, following [Dorfman (1943)](https://projecteuclid.org/euclid.aoms/1177731363), rely on two assumptions. First, we assume that tests are groups randomly to ensure statistical independence between samples in a given batch. Second, we assume that the test in question is sufficiently sensitive to ensure a positive test for the batch whenever at least one of the samples within it would have yielded a positive result when tested individually. Under these assumptions, if $k$ is the batch size, $n$ is the total number of samples, and $p$ is the probability that an individual sample tests positive, the expected number of tests required to identify all positive samples equals $n[1/k + 1 - (1 - p)^k]$. 
-
-
-[^8]: For a population prevalence of $0.25\%$, the optimal pool size under Dorfman's assumptions is `r get_optimal_pool(0.0025)`, which reduces the amount of laboratory tests required by `r 100 - round(100 * get_optimal_pool_fraction(0.0025))`\% in expectation. To be conservative, we use a batch size of 5, yielding more modest savings of `r 100 - round(100 * get_pool_fraction(5, 0.0025))`\%. Much more sophisticated pooling strategies than Dorfman's have been developed in the intervening years. For a recent refinement, see [Shental et al. (2020)](https://advances.sciencemag.org/content/6/37/eabc5961?intcmp=trendmd-adv).
-<!--In the present context, the assumptions that underlie this calculation are likely to be somewhat pessimistic as they assume independence between the samples within a given batch. In contrast, when pooling by household, we would expect positive dependence between samples in a given batch.-->
-
+[^adapt]: [Thompson, S.K. (1990), "Adaptive Cluster Sampling", *Journal of the American Statistical Association*, 85(412), pp. 1050-1059](https://amstat.tandfonline.com/doi/abs/10.1080/01621459.1990.10474975). 
 
 ## What about false positives and negatives?
-Thus far we have abstracted away the problem of false positives and false negatives. As our primary goal is to estimate prevalence rather than to diagnose particular individuals, this is not a major concern. First, if false positive and false negative rates are constant, we can still gain useful information by examining *changes* in estimated prevalence. Second, recent research has proposed estimates of these rates that can be used to correct estimates of population prevalence. More broadly, as we show in the appendix, false positives may be less of a problem among the university-aged population because this group is substantially more likely to be infected.
-
-```{r,echo=FALSE}
-get_false_positive <- function(prev, sens, spec) {
-# everything is in %
-  term1 <- (100 - spec) / sens
-  term2 <- (100 - prev) / prev
-  return(100 - 100 / (1 + term1 * term2))
-}
-```
-
-## Appendix: Calculating False Positive Rates
-
-The likelihood of a false positive depends on three factors: the *sensitivity* and *specificity* of a test along with the prevalence of coronavirus in the relevant population. Sensitivity is the share of people who test *positive* among those who *have coronavirus*. Estimates of the sensitivity of PCR tests vary, but range between 71\% and 98\%.[^10] Specificity is the share of people who test *negative* among those who *do not have coronavirus*. We can bound the specificity of PCR tests fairly accurately using results from the [ONS Infection survey pilot](https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/conditionsanddiseases/methodologies/covid19infectionsurveypilotmethodsandfurtherinformation). Between 1 June and 12 July, only 50 of the 122,776 samples collected as part of this survey tested positive. To compute a lower bound for the specificity, suppose that all 50 positive results were false positives. If true, this would mean that the ONS obtained 122,726 negative test results in a group of 122,776 people who did not in fact have coronavirus, implying a specificity of 99.96\%. If any of the positive test results were true positives, then the true specificity must be higher. To be conservative, assume a sensitivity of 71\% and a specificity of 99.96\%. According to [REACT-1](https://www.gov.uk/government/publications/react-1-study-of-coronavirus-transmission-august-2020-results/react-1-real-time-assessment-of-community-transmission-of-coronavirus-covid-19-in-august-2020), the prevalence of coronavirus in the population as a whole was approximately 0.13\% at the beginning of September. At this rate of prevalence, no more than `r round(get_false_positive(0.13, 71, 99.96))`\% of positive test results will be false positives.[^9] Among university-aged individuals, however, estimated prevalence was approximately 0.25\%. Thus, among students no more than `r round(get_false_positive(0.25, 71, 99.96))`\% of positives will be false positives. <!--For purposes of comparison, coronavirus prevalence among those showing symptoms of the disease was approximately 0.68\% at the beginning of September, according to REACT-1. Thus, under the present government policy of testing only symptomatic individuals, no more than `r round(get_false_positive(0.68, 71, 99.96))`\% positive tests will be false positives. Roughly speaking: false positives are around half as likely among students as in the general population, and half again as likely among symptomatic individuals.-->
-Whether this should be viewed as a high or low number, of course, depends on one's perspective. As explained above, a policy of testing only symptomatic individuals may miss up to 80\% of all coronavirus cases among our students. Under a policy of universal testing, on the other hand, up to 18\% of students instructed to self-isolate may have been inconvenienced unnecessarily.
-
-[^9]: Defining $B = (100\% - \text{Specificity})\times (100\% - \text{Prevalence}) / (\text{Sensitivity} \times \text{Prevalence})$, the false positive rate is given by $[B/(1 + B)]$\%.
-[^10]: <https://www.bmj.com/content/369/bmj.m1808>
-
-
-
-
-
-
+Thus far we have abstracted away the problem of false positives and false negatives. As our primary goal is to estimate prevalence and identify clusters of infection rather than to diagnose particular individuals, this is not a major concern. First, if false positive and false negative rates are constant, we can still gain useful information by examining *changes* in estimated prevalence. Second, recent research has proposed estimates of these rates that can be used to correct estimates of population prevalence. 
