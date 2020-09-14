@@ -95,32 +95,26 @@ knitr::kable(foo, col.names = c('Infected Households ($C$)', 'Prevalence (%)', '
              caption = 'Expected number of samples before the first positive result under random sampling without replacement from a population of size 3000.')
 ```
 
-Given a rough idea of household prevalence at the start of MT, there are several simple ways to approximate the sample size required for randomized pooled testing to provide useful information. The first and simplest is to ask how many households we would need to test, on average, before obtaining our first positive result. If $C$ out of the 3000 households are infected at the start of term, then the answer is approximately 3000/$C$.[^exact] Table 1 provides exact results over a range of values for $C$. This calculation provides a rough-and-ready method for showing that a proposed sample size is likely *too small* to be useful. For example, a sample size of 50 households would be too small to provide useful information when $C$ is close to 35 because we would, on average, require 83 samples to obtain our first positive result if this were the true prevalence. 
+Given a rough idea of household prevalence at the start of MT, there are several simple ways to approximate the sample size required for randomized pooled testing to provide useful information. The first and simplest is to ask how many households we would need to test, on average, before obtaining our first positive result. If $C$ out of the 3000 households are infected at the start of term, then the answer is approximately 3000/$C$.[^exact] Table 1 provides exact results over a range of values for $C$. This calculation provides a rough-and-ready method for showing that a proposed sample size is likely *too small* to be useful. For example, a sample size of 50 households would be too small to provide useful information when $C$ is close to 35 because we would, on average, require approximately 83 samples to obtain our first positive result if this were the true prevalence. 
 
 [^exact]: The exact value is $(N+1)/(C + 1)$ for a population of size $N$ containing $C$ positives.
 
 
-
-
-
-
-
-
 ```{r,echo=FALSE}
-get_est_range <- function(sample_size, Npositive, popn_size = 20000, alpha = 0.2) {
+get_est_range <- function(sample_size, Npositive, popn_size = 3000, alpha = 0.2) {
   Plower <- qhyper(alpha / 2, Npositive, popn_size - Npositive, sample_size)
   Pupper <- qhyper(1 - alpha / 2, Npositive, popn_size - Npositive, sample_size)
   Elower <- popn_size * Plower / sample_size
   Eupper <- popn_size * Pupper / sample_size
   return(c(floor(Elower), ceiling(Eupper)))
 }
-get_exact_prob <- function(sample_size, Npositive, popn_size = 20000, alpha = 0.2) {
+get_exact_prob <- function(sample_size, Npositive, popn_size = 3000, alpha = 0.2) {
   Plower <- qhyper(alpha / 2, Npositive, popn_size - Npositive, sample_size)
   Pupper <- qhyper(1 - alpha / 2, Npositive, popn_size - Npositive, sample_size)
   sum(dhyper(Plower:Pupper, Npositive, popn_size - Npositive, sample_size))
 }
 Vget_exact_prob <- Vectorize(get_exact_prob, 'sample_size')
-plot_est_range <- function(sample_size, Npositive, popn_size = 20000, alpha = 0.2) {
+plot_est_range <- function(sample_size, Npositive, popn_size = 3000, alpha = 0.2) {
 # vectorized over sample_size
   Plower <- qhyper(alpha / 2, Npositive, popn_size - Npositive, sample_size)
   Pupper <- qhyper(1 - alpha / 2, Npositive, popn_size - Npositive, sample_size)
@@ -139,14 +133,14 @@ plot_est_range <- function(sample_size, Npositive, popn_size = 20000, alpha = 0.
 }
 ```
 
-A more refined way to address the question of how many samples are needed is by calculating *how close* the estimated number of cases $E$ will likely be to the true number of cases $C$ for different values of $n$.[^4] Suppose that there are 60 cases within the university. This would represent a slight uptick from the most recent  [REACT-1](https://www.gov.uk/government/publications/react-1-study-of-coronavirus-transmission-august-2020-results/react-1-real-time-assessment-of-community-transmission-of-coronavirus-covid-19-in-august-2020) estimate of coronavirus prevalence among 18-24 year olds. With a sample size of $n =1000$ the estimated number of cases $E$ will fall in the range [`r get_est_range(1000, 60)`], inclusive, with approximately 90\% probability.[^4a] With a sample size of $n = 1500$ this range narrows to [`r get_est_range(1500, 60)`], as seen from Figure 1.
+A more refined way to determine an appropriate sample size is by calculating *how close* the estimated number of infected households, $E$, will likely be to the true number of infected households $C$ for different particular values of $n$.[^4] Suppose, as before, that there are initially 35 infected households. With a sample size of $n = 250$ the estimated number of infected households will fall in the range [`r get_est_range(250, 35)`], inclusive, with approximately `r round(100 * get_exact_prob(250, 35), digits = -1)`\% probability.[^4]
 
-[^4]: The intervals presented in this paragraph and Figure 1 are calculated from the quantiles of a Hypergeometric($N$, $C$, $n$) distribution where $N$ is the population size, $C$ is the number of positives in the population, and $n$ is the sample size. 
-[^4a]: Because $E$ has a discrete support set, it is not possible to construct exact 90\% intervals. The exact probabilities, to two decimal places, for the intervals with sample sizes $(500, 1000, 1500, 2000)$ from Figure 1 and the text are (`r round(Vget_exact_prob(c(500, 1000, 1500, 2000), 60),2)`), respectively.
+[^4]: This interval is calculated from the quantiles of a Hypergeometric($N$, $C$, $n$) distribution where $N$ is the population size, $C$ is the number of positives in the population, and $n$ is the sample size. 
+<!---[^4a]: Because $E$ has a discrete support set, it is not possible to construct exact 90\% intervals. The exact probabilities, to two decimal places, for the intervals with sample sizes $(100, 150, 200, 250, 300)$ from Figure 1 and the text are (`r round(Vget_exact_prob(c(100, 150, 200, 250, 300), 35),2)`), respectively.--->
 
-```{r, echo = FALSE, fig.width=5, fig.height=4, fig.align = 'center', fig.cap = 'This figure shows how close the estimated number of cases will likely be to the true number of cases for different sample sizes. At a given sample size, the estimated number of cases has approximately a 90\\% chance of falling in the specified interval. See Footnotes 5 and 6 for further details.'}
-plot_est_range(c(500, 1000, 1500, 2000), 60)
-```
+<!---```{r, echo = FALSE, fig.width=5, fig.height=4, fig.align = 'center', fig.cap = 'This figure shows how close the estimated number of cases will likely be to the true number of cases for different sample sizes. At a given sample size, the estimated number of cases has approximately a 90\\% chance of falling in the specified interval. See Footnotes 5 and 6 for further details.'}
+plot_est_range(c(100, 150, 200, 250, 300), 35)
+```--->
 
 ```{r, echo = FALSE}
 get_power <- function(n, p, p0, N = 20000, alpha = 0.1) {
