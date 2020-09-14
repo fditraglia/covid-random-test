@@ -76,6 +76,12 @@ get_est_range <- function(sample_size, Npositive, popn_size = 20000, alpha = 0.2
   Eupper <- popn_size * Pupper / sample_size
   return(c(floor(Elower), ceiling(Eupper)))
 }
+get_exact_prob <- function(sample_size, Npositive, popn_size = 20000, alpha = 0.2) {
+  Plower <- qhyper(alpha / 2, Npositive, popn_size - Npositive, sample_size)
+  Pupper <- qhyper(1 - alpha / 2, Npositive, popn_size - Npositive, sample_size)
+  sum(dhyper(Plower:Pupper, Npositive, popn_size - Npositive, sample_size))
+}
+Vget_exact_prob <- Vectorize(get_exact_prob, 'sample_size')
 plot_est_range <- function(sample_size, Npositive, popn_size = 20000, alpha = 0.2) {
 # vectorized over sample_size
   Plower <- qhyper(alpha / 2, Npositive, popn_size - Npositive, sample_size)
@@ -95,11 +101,12 @@ plot_est_range <- function(sample_size, Npositive, popn_size = 20000, alpha = 0.
 }
 ```
 
-A more refined way to address the question of how many samples are needed is by calculating *how close* the estimated number of cases $E$ will likely be to the true number of cases $C$ for different values of $n$. Suppose that there are 60 cases within the university. This would represent a slight uptick from the most recent  [REACT-1](https://www.gov.uk/government/publications/react-1-study-of-coronavirus-transmission-august-2020-results/react-1-real-time-assessment-of-community-transmission-of-coronavirus-covid-19-in-august-2020) estimate of coronavirus prevalence among 18-24 year olds. With a sample size of $n =1000$ the estimated number of cases $E$ will fall in the range (`r get_est_range(1000, 60)`) with more than 80\% probability. With a sample size of $n = 1500$ this range would narrow to (`r get_est_range(1500, 60)`). The figure overleaf presents analogous results for sample sizes of $500$ and $2000$.[^4]
+A more refined way to address the question of how many samples are needed is by calculating *how close* the estimated number of cases $E$ will likely be to the true number of cases $C$ for different values of $n$.[^4] Suppose that there are 60 cases within the university. This would represent a slight uptick from the most recent  [REACT-1](https://www.gov.uk/government/publications/react-1-study-of-coronavirus-transmission-august-2020-results/react-1-real-time-assessment-of-community-transmission-of-coronavirus-covid-19-in-august-2020) estimate of coronavirus prevalence among 18-24 year olds. With a sample size of $n =1000$ the estimated number of cases $E$ will fall in the range [`r get_est_range(1000, 60)`], inclusive, with approximately 90\% probability.[^4a] With a sample size of $n = 1500$ this range narrows to [`r get_est_range(1500, 60)`], as seen from Figure 1.
 
-[^4]: These intervals are calculated from the quantiles of a Hypergeometric($C$, $N - C$, $n$) distribution where $n$ is the sample size and $C$ is the number of positives in a population of size $N$.
+[^4]: The intervals presented in this paragraph and Figure 1 are calculated from the quantiles of a Hypergeometric($N$, $C$, $n$) distribution where $N$ is the population size, $C$ is the number of positives in the population, and $n$ is the sample size. 
+[^4a]: Because $E$ has a discrete support set, it is not possible to construct exact 90\% intervals. The exact probabilities, to two decimal places, for the intervals with $n = 500, 1000, 1500, 2000$ from Figure 1 and the text are `r round(Vget_exact_prob(c(500, 1000, 1500, 2000), 60),2)`, respectively.
 
-```{r, echo = FALSE, fig.width=5, fig.height=4, fig.align = 'center', fig.cap = 'This figure shows how close the estimated number of cases will likely be to the true number of cases for different sample sizes. At a given sample size, the estimated number of cases as a greater than 80\\% chance of falling in the specified interval.'}
+```{r, echo = FALSE, fig.width=5, fig.height=4, fig.align = 'center', fig.cap = 'This figure shows how close the estimated number of cases will likely be to the true number of cases for different sample sizes. At a given sample size, the estimated number of cases has approximately a 90\\% chance of falling in the specified interval. See Footnotes 5 and 6 for further details.'}
 plot_est_range(c(500, 1000, 1500, 2000), 60)
 ```
 
