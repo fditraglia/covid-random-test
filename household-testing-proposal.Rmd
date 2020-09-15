@@ -97,76 +97,28 @@ knitr::kable(foo, col.names = c('Infected Households ($C$)', 'Prevalence (%)', '
 
 
 ```{r,echo=FALSE}
-get_est_range <- function(sample_size, Npositive, popn_size = 3000, alpha = 0.2) {
-  Plower <- qhyper(alpha / 2, Npositive, popn_size - Npositive, sample_size)
-  Pupper <- qhyper(1 - alpha / 2, Npositive, popn_size - Npositive, sample_size)
-  Elower <- popn_size * Plower / sample_size
-  Eupper <- popn_size * Pupper / sample_size
-  return(c(floor(Elower), ceiling(Eupper)))
-}
-get_exact_prob <- function(sample_size, Npositive, popn_size = 3000, alpha = 0.2) {
-  Plower <- qhyper(alpha / 2, Npositive, popn_size - Npositive, sample_size)
-  Pupper <- qhyper(1 - alpha / 2, Npositive, popn_size - Npositive, sample_size)
-  sum(dhyper(Plower:Pupper, Npositive, popn_size - Npositive, sample_size))
-}
-Vget_exact_prob <- Vectorize(get_exact_prob, 'sample_size')
-plot_est_range <- function(sample_size, Npositive, popn_size = 3000, alpha = 0.2) {
-# vectorized over sample_size
-  Plower <- qhyper(alpha / 2, Npositive, popn_size - Npositive, sample_size)
-  Pupper <- qhyper(1 - alpha / 2, Npositive, popn_size - Npositive, sample_size)
-  Elower <- popn_size * Plower / sample_size
-  Eupper <- popn_size * Pupper / sample_size
-  matplot(sample_size, cbind(Elower, Eupper),
-          xlab = 'Sample Size', ylab = 'Estimated #Cases',
-          main = '', pch = '')
-  arrows(sample_size, Elower, sample_size, Eupper, length = 0.05,
-         angle = 90, code = 3, lwd = 2)
-  abline(h = Npositive, lty = 2, col = 'blue', lwd = 2)
-  title1 <- 'True #Cases = '
-  title2 <- bquote(.(Npositive))
-  mytitle <- paste0(title1, title2)
-  legend('topright', legend = mytitle)
+get_prob_E_range <- function(lower, upper, n, C, N = 3000) {
+  L <- lower * n / N
+  U <- upper * n / N
+  sum(dhyper(L:U, C, N - C, n))
 }
 ```
 
-A more refined way to determine an appropriate sample size is by calculating *how close* the estimated number of infected households, $E$, will likely be to the true number of infected households, $C$, for a given sample size. Suppose, as before, that there are initially 35 infected households. With a sample size of $n = 250$ the estimated number of infected households will fall in the range [`r get_est_range(250, 35)`], inclusive, with approximately `r round(100 * get_exact_prob(250, 35), digits = -1)`\% probability.[^4]
+A more refined way to determine an appropriate sample size is by calculating *how close* the estimated number of infected households, $E$, will likely be to the true number of infected households, $C$, for a given sample size. Suppose, as before, that there are initially 35 infected households. With a sample size of $n = 300$ the estimated number of infected households will fall in the range $[20,60]$, inclusive, with approximately  `r round(100 * get_prob_E_range(lower = 20, upper = 60, n = 300, C = 35))`\% probability. Moreover, with this sample size there would be only a `r round(100 * get_prob_E_range(lower = 0, upper = 0, n = 300, C = 35))`\% chance of *failing* to detect any infected households.[^4] 
 
-[^4]: This interval is calculated from the quantiles of a Hypergeometric($N$, $C$, $n$) distribution where $N$ is the population size, $C$ is the number of positives in the population, and $n$ is the sample size. 
-<!---[^4a]: Because $E$ has a discrete support set, it is not possible to construct exact 90\% intervals. The exact probabilities, to two decimal places, for the intervals with sample sizes $(100, 150, 200, 250, 300)$ from Figure 1 and the text are (`r round(Vget_exact_prob(c(100, 150, 200, 250, 300), 35),2)`), respectively.--->
-
-<!---```{r, echo = FALSE, fig.width=5, fig.height=4, fig.align = 'center', fig.cap = 'This figure shows how close the estimated number of cases will likely be to the true number of cases for different sample sizes. At a given sample size, the estimated number of cases has approximately a 90\\% chance of falling in the specified interval. See Footnotes 5 and 6 for further details.'}
-plot_est_range(c(100, 150, 200, 250, 300), 35)
-```--->
-
-**Update power calculation to Fisher's exact test! The population size is too small for a normal approximation to be reasonable here.**
+[^4]: The results in this paragraph are calculated from the quantiles of a Hypergeometric($N$, $C$, $n$) distribution where $N$ is the population size, $C$ is the number of positives in the population, and $n$ is the sample size. 
 
 ```{r echo = FALSE}
-get_cv <- function(n, C0, N = 3000, alpha = 0.1) {
-  qhyper(1 - alpha, C0, N - C0, n)
-}
-get_exact_alpha <- function(n, C0, N = 3000, alpha = 0.1) {
-  phyper(get_cv(n, C0, N, alpha), C0, N - C0, n)
-}
-get_exact_power <- function(cv, n, C0, C, N = 3000) {
-  
+get_exact_power <- function(cv, n, C1, N = 3000) {
+  1 - phyper(cv, C1, N - C1, n)
 }
 ```
 
-```{r, echo = FALSE}
-get_power <- function(n, p, p0, N = 20000, alpha = 0.1) {
-  finite_correct <- (N - n) / (N - 1) # finite popn correction
-  mu <- (p - p0) / sqrt(finite_correct * p0 * (1 - p0) /n)
-  s <- sqrt(p * (1 - p) / (p0 * (1 - p0)))
-  alpha <- 0.1
-  critical_value <- qnorm(0.9)
-  return(1 - pnorm(critical_value, mu, s))
-}
-```
-A third way of deciding how many samples are needed is by calculating the chance that we will be able to reliably distinguish between two different levels of coronavirus prevalence given a particular sample size. Suppose, for example, that we initially believed there to be $50$ cases in the university, corresponding to the current estimated prevalence among the university-aged population from   [REACT-1](https://www.gov.uk/government/publications/react-1-study-of-coronavirus-transmission-august-2020-results/react-1-real-time-assessment-of-community-transmission-of-coronavirus-covid-19-in-august-2020). If cases increased to 100, we would have approximately a `r round(100 * get_power(1400, p = 100/20000, p0 = 50/20000))`\% chance of detecting an increase, with high confidence, based on a sample 1400 students.[^5] If they increased to 200, we would have a `r round(100 * get_power(1400, p = 200/20000, p0 = 50/20000))`\% chance of detecting an increase. Roughly speaking, if cases were doubling weekly, then a sample of 200 students per day would be likely to detect an increase after one week, and nearly certain to do so after two weeks.
+A third way of deciding how many samples are needed is by calculating the chance that we woulc be able to reliably distinguish between two different levels of coronavirus prevalence. Suppose that we started term with 35 infected households. If this number doubled to 70, with a sample size of $n = 300$ we would have approximately a `r round(100 * get_exact_power(cv = 5, n = 300, C1 = 70))`\% of detecting an increase, with high confidence. If the number of infected households trebled to 105, our chance of detecting an increase with 300 samples would rise to `r round(100 * get_exact_power(cv = 5, n = 300, C1 = 105))`\%.[^power]
 
-[^5]: These values correspond to a power calculation for an $\alpha = 0.1$ test of $H_0\colon p \leq p_0$ versus $H_1\colon p > p_0$ using the score test statistic $T_n = (\widehat{p} - p_0)/ SE(p_0)$ where $SE(p_0) = \sqrt{\kappa p_0 (1 - p_0)/n}$ and $\kappa = (N - n)/(N - 1)$ is a finite-population correction. In finite sample simulations, a standard normal critical value yields a slightly over-sized test, $\alpha \approx 0.13$ rather than 0.1, resulting in slightly higher power than this calculation would suggest.
+[^power]: These values correspond to a power calculation based on Fisher's exact test for a Hypergeometric$(N, C, n)$ distribution where $N$ is the population size, $n$ is the sample size, and $C$ is the number of positives in the population. For $N = 3000$ and $n = 300$ a test of $H_0\colon C \leq 35$ versus $H_1\colon C > 35$ with a critical value of $5$ has size $\alpha$ = `r round(get_exact_power(5, 300, 35), 2)`. (Due to discreteness it is impossible to achieve a size of precisely 0.1). The power of this test is `r round(get_exact_power(5, 300, 70), 2)` against the alternative $C = 70$ and `r round(get_exact_power(5, 300, 105), 2)` against the alternative $C = 105$.
 
-Broadly speaking, our calculations suggests that a simple random sample of approximately 250 household groups per week to estimate coronavirus prevalence at the household level and to determine whether, and how quickly, it may be increasing. This would amount to around ??? as many tests over the entire term as would be required for a *single* round of universal testing. 
+Broadly speaking, our calculations suggest that a simple random sample of approximately 300 household groups per week would provide a considerable amount of useful information. This would amount to 10\% of the number of tests required for weekly universal testing and 20\% of the number required for fortnightly universal testing.
 
 ## Finding Clusters with Adaptive Sampling
 Thus far assumed we want to estimate prevalence and considered simplest possible sampling procedure: simple random sample.
@@ -201,7 +153,7 @@ Thus far we have abstracted away the problem of false positives and false negati
 - But point out that this problem is also relevant for testing of symptomatic individuals! 
 - For purposes of comparison, coronavirus prevalence among those showing symptoms of the disease was approximately 0.68\% at the beginning of September, according to REACT-1. Thus, under the present government policy of testing only symptomatic individuals, no more than `r round(get_false_positive(0.68, 71, 99.96))`\% positive tests will be false positives. 
 - Note that a prevalence of 0.68\% among symptomatic individuals is *lower* than our conservative estimate of prevalence among *households* at the start of term. (This is because the only possibilities are 8-45 infected groups if you have 45 infected individuals)
-- So the real question is whether the specificity of 
+- So the real question is whether the specificity[^pool]
 
 [^pool]: <https://doi.org/10.1017/S0950268820001752>
 
