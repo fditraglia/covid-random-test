@@ -1,7 +1,7 @@
 ---
 title: "A Short Note on Surveillance Testing"
 author: "FD, CG, VK & NQ on behalf of LMH Governing Body"
-date: "14/09/2020"
+date: "15/09/2020"
 fontsize: 12pt
 output: pdf_document
 urlcolor: blue
