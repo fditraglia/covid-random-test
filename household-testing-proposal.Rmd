@@ -134,6 +134,8 @@ For a fixed number of tests each week, incorporating adaptive sampling based on 
 
 [^adapt2]: Although the procedure is somewhat involved, it is possible to use results for *all tested households*--both those sampled randomly and those sampled in response to a positive test among their neighbors--to inform estimates of prevalence: see [Thompson (1990)](https://amstat.tandfonline.com/doi/abs/10.1080/01621459.1990.10474975). 
 
+
+## False positives and negatives do not invalidate our analysis.
 ```{r,echo=FALSE}
 get_false_positive <- function(prev, sens, spec) {
 # everything is in %
@@ -143,8 +145,7 @@ get_false_positive <- function(prev, sens, spec) {
 }
 ```
 
-## False positives and negatives do not invalidate our analysis.
-Thus far we have abstracted away the problem of false positives and false negatives. As our primary goal is to estimate prevalence and identify clusters of infection rather than to diagnose particular individuals, this is less of a concern. First, if false positive and false negative rates are constant, we can still gain useful information by examining *changes* in estimated prevalence. Second, recent research has proposed estimates of these rates that can be used to correct estimates of population prevalence. Third, and most importantly, false positives and negatives are likely to be much less of a problem under pooled testing of household as opposed to individual testing of students. In the appendix, we provide some back-of-the envelope calculations in support of this claim.
+Thus far we have abstracted away the problem of false positives and false negatives. As our primary goal is to estimate prevalence and identify clusters of infection rather than to diagnose particular individuals, this is less of a concern. First, if false positive and false negative rates are constant, we can still gain useful information by examining *changes* in estimated prevalence. Second, recent research has proposed estimates of these rates that can be used to correct estimates of population prevalence. Third, false positives are not especially likely under pooled testing of households. In the appendix, we provide some back-of-the envelope calculations in support of this claim.
 
 ## Appendix: Approximating False Positive Rates
 
@@ -153,30 +154,9 @@ Defining
 $$B = \frac{(100\% - \text{Specificity})\times (100\% - \text{Prevalence})}{ (\text{Sensitivity} \times \text{Prevalence})},$$
 the false positive rate is given by $[B / (1 + B)]$\%. Sensitivity is defined as the share of people who test *positive* among those who *have coronavirus*. Estimates of the sensitivity of PCR tests vary, but range between 71\% and 98\%.[^10] Specificity is the share of people who test *negative* among those who *do not have coronavirus*. We can bound the specificity of PCR tests fairly accurately using results from the [ONS Infection survey pilot](https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/conditionsanddiseases/methodologies/covid19infectionsurveypilotmethodsandfurtherinformation). Between 1 June and 12 July, only 50 of the 122,776 samples collected as part of this survey tested positive. To compute a lower bound for the specificity, suppose that all 50 positive results were false positives. If true, this would mean that the ONS obtained 122,726 negative test results in a group of 122,776 people who did not in fact have coronavirus, implying a specificity of 99.96\%. If any of the positives were true positives, then the true specificity must be higher. 
 
-The figures in the preceding paragraph are for "single test" errors, i.e.\ errors that arise when testing individuals. In contrast, our proposals in this document involve *pooling* samples from household groups. The question then becomes: how do single test errors translate into pooled test errors? One important concern is dilution errors, the possibility that pooling samples could lower sensitivity by reducing the concentration of material from each individual sample. For modest pool sizes such as those proposed above, however, recent studies find no evidence of reduced sensitivity.[^pool] As such, we assume a worst-case sensitivity of 71\% for pooled testing, the bottom of the range for single test sensitivity from the preceding paragraph.
+The figures in the preceding paragraph are for "single test" errors, i.e.\ errors that arise when testing individuals. In contrast, our proposals in this document involve *pooling* samples from household groups. The question then becomes: how do single test errors translate into pooled test errors? One important concern is dilution errors, the possibility that pooling samples could lower sensitivity by reducing the concentration of material from each individual sample. For modest pool sizes such as those proposed above, however, recent studies find no evidence of reduced sensitivity.[^pool] The effect of pooling on specificity is somewhat less clear. If, however, we were to adopt a policy of re-testing the individuals in pools that test positive, sensitivity would most likely *increase* relative to individual testing, because it is extremely unlikely to obtain more than one false positive in a row.[^pool2] 
 
 [^pool]: See Pikovski \& Bentele (2020): <https://doi.org/10.1017/S0950268820001752>. 
+[^pool2]: Ibid.
 
-
-- Moreover: false positives are most likely when prevalence is low. But prevalence among households is necessarily higher than that among individuals so pooling should help here. Give calculation. Then do some back of the envelope calculation assuming characteristics of pooled tests match those of individual tests. Point out that it's only a rough approx because it's based on individual tests. Presumably the false positive rate will not be very large.
-
-
-**Need to change this to refer to *households* and emphasize that we don't know for sure how the test characteristics translate to pooled testing so this is only a back-of-the-envelope calculation**
-
-- Approximately `r round(get_false_positive(100 * 35/ 3000, 71, 99.96))`\% of tests at the household level will be false positives.
-- If we lower the specificity to 99\% then around `r round(get_false_positive(100 * 35/ 3000, 71, 99))`\% are false positives. So the key is what the specificity is. If it were 99.9\% then `r round(get_false_positive(100 * 35/ 3000, 71, 99.9))`\% false positives
-- But point out that this problem is also relevant for testing of symptomatic individuals! 
-- For purposes of comparison, coronavirus prevalence among those showing symptoms of the disease was approximately 0.68\% at the beginning of September, according to REACT-1. Thus, under the present government policy of testing only symptomatic individuals, no more than `r round(get_false_positive(0.68, 71, 99.96))`\% positive tests will be false positives. 
-- Note that a prevalence of 0.68\% among symptomatic individuals is *lower* than our conservative estimate of prevalence among *households* at the start of term. (This is because the only possibilities are 8-45 infected groups if you have 45 infected individuals)
-- So the real question is whether the specificity[^pool]
-
-
-
-
-
-To be conservative, assume a sensitivity of 71\% and a specificity of 99.96\%. According to [REACT-1](https://www.gov.uk/government/publications/react-1-study-of-coronavirus-transmission-august-2020-results/react-1-real-time-assessment-of-community-transmission-of-coronavirus-covid-19-in-august-2020), the prevalence of coronavirus in the population as a whole was approximately 0.13\% at the beginning of September. At this rate of prevalence, no more than `r round(get_false_positive(0.13, 71, 99.96))`\% of positive test results will be false positives.[^9] Among university-aged individuals, however, estimated prevalence was approximately 0.25\%. Thus, among students no more than `r round(get_false_positive(0.25, 71, 99.96))`\% of positives will be false positives. 
-
-Whether this should be viewed as a high or low number, of course, depends on one's perspective. As explained above, a policy of testing only symptomatic individuals may miss up to 80\% of all coronavirus cases among our students. Under a policy of universal testing, on the other hand, up to 18\% of students instructed to self-isolate may have been inconvenienced unnecessarily.
-
-[^9]: Defining $B = (100\% - \text{Specificity})\times (100\% - \text{Prevalence}) / (\text{Sensitivity} \times \text{Prevalence})$, the false positive rate is given by $[B/(1 + B)]$\%.
-[^10]: <https://www.bmj.com/content/369/bmj.m1808>
+Based on the arguments of the preceding paragraph, assume a worst-case sensitivity of 71\% for pooled testing and a worst-case specificity of 99.96\%, with the understanding that the latter may require re-testing of individuals within pools, slightly increasing the number of tests required. As in our discussions in the body of the document, suppose there are 35 infected households out of 3000 at the start of term, for an initial prevalence of roughly 1.17\%. Under these assumptions, the household false positive rate would be `r round(get_false_positive(100 * 35/3000, 71, 99.96), 1)`\%. In other words, roughly 1 out of 20 households instructed to isolate will have been needlessly inconvenienced. This does not strike us as a particularly worrying prospect.
