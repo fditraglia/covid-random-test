@@ -1,7 +1,7 @@
 ---
 title: "A Short Note on Surveillance Testing"
 author: "FD, CG, VK & NQ on behalf of LMH Governing Body"
-date: "15/09/2020"
+date: "16/09/2020"
 fontsize: 12pt
 output: pdf_document
 urlcolor: blue
@@ -138,23 +138,23 @@ For a fixed number of tests each week, incorporating adaptive sampling based on 
 
 
 ## False positives and negatives do not invalidate our analysis.
-```{r,echo=FALSE}
-get_false_positive <- function(prev, sens, spec) {
-# everything is in %
-  term1 <- (100 - spec) / sens
-  term2 <- (100 - prev) / prev
-  return(100 - 100 / (1 + term1 * term2))
-}
-```
 
 Thus far we have abstracted away the problem of false positives and false negatives. As our primary goal is to estimate prevalence and identify clusters of infection rather than to diagnose particular individuals, this is less of a concern. First, if false positive and false negative rates are constant, we can still gain useful information by examining *changes* in estimated prevalence. Second, recent research has proposed estimates of these rates that can be used to correct estimates of population prevalence. Third, false positives are not especially likely under pooled testing of households. In the appendix, we provide some back-of-the envelope calculations in support of this claim.
 
 ## Appendix: Approximating False Positive Rates
 
+```{r,echo=FALSE}
+get_false_positive <- function(prev, sens, spec) {
+# everything is in %
+  B <- (100 - spec) * (100 - prev) / (sens * prev)
+  return(100 * B / (B + 1))
+}
+```
+
 The likelihood of a false positive depends on three factors: the *sensitivity* and *specificity* of a test along with the prevalence of coronavirus in the relevant population.
 Defining
 $$B = \frac{(100\% - \text{Specificity})\times (100\% - \text{Prevalence})}{ (\text{Sensitivity} \times \text{Prevalence})},$$
-the false positive rate is given by $[B / (1 + B)]$\%. Sensitivity is defined as the share of people who test *positive* among those who *have coronavirus*. Estimates of the sensitivity of PCR tests vary, but range between 71\% and 98\%.[^10] Specificity is the share of people who test *negative* among those who *do not have coronavirus*. We can bound the specificity of PCR tests fairly accurately using results from the [ONS Infection survey pilot](https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/conditionsanddiseases/methodologies/covid19infectionsurveypilotmethodsandfurtherinformation). Between 1 June and 12 July, only 50 of the 122,776 samples collected as part of this survey tested positive. To compute a lower bound for the specificity, suppose that all 50 positive results were false positives. If so, this would mean that the ONS obtained 122,726 negative test results in a sample of 122,776 people who did not in fact have coronavirus, implying a specificity of 99.96\%. If any of the positives were true positives, then the true specificity must be higher. 
+the false positive rate is given by $[B / (1 + B)] \times 100$\%. Sensitivity is defined as the share of people who test *positive* among those who *have coronavirus*. Estimates of the sensitivity of PCR tests vary, but range between 71\% and 98\%.[^10] Specificity is the share of people who test *negative* among those who *do not have coronavirus*. We can bound the specificity of PCR tests fairly accurately using results from the [ONS Infection survey pilot](https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/conditionsanddiseases/methodologies/covid19infectionsurveypilotmethodsandfurtherinformation). Between 1 June and 12 July, only 50 of the 122,776 samples collected as part of this survey tested positive. To compute a lower bound for the specificity, suppose that all 50 positive results were false positives. If so, this would mean that the ONS obtained 122,726 negative test results in a sample of 122,776 people who did not in fact have coronavirus, implying a specificity of 99.96\%. If any of the positives were true positives, then the true specificity must be higher. 
 
 [^10]: <https://www.bmj.com/content/369/bmj.m1808>
 
